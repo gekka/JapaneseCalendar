@@ -2,7 +2,7 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:app="clr-namespace:WpfApplication1"
-        Title="MainWindow" SizeToContent="WidthAndHeight">
+        Title="MainWindow" SizeToContent="WidthAndHeight" MinHeight="400">
     <Window.Resources>
 
         <app:YearConverter x:Key="yearConv"/>
@@ -11,35 +11,54 @@
             <TextBlock Text="{Binding Converter={StaticResource yearConv},ConverterParameter=H}"/>
         </DataTemplate>
         <DataTemplate x:Key="calendarButtonTemplate">
-            <TextBlock Text="{Binding Converter={StaticResource yearConv},ConverterParameter=K}"/> <!-- パラメーターKで陰暦の月表記にしてみる-->
+            <TextBlock Text="{Binding Converter={StaticResource yearConv},ConverterParameter=K}"/>
+            <!-- パラメーターKで陰暦の月表記にしてみる -->
         </DataTemplate>
 
         <Style TargetType="{x:Type CalendarButton}" x:Key="calendarButtonStyle">
             <Setter Property="ContentTemplate" Value="{StaticResource calendarButtonTemplate}" />
         </Style>
-        
+
         <Style TargetType="{x:Type app:CalendarEx}">
             <Setter Property="HeaderTemplate" Value="{StaticResource calendarHeaderButtonTemplate}" />
             <Setter Property="CalendarButtonStyle" Value="{StaticResource calendarButtonStyle}" />
         </Style>
-        
+
+        <Style TargetType="{x:Type Calendar}" x:Key="japaneseCalendar">
+            <Setter Property="CalendarButtonStyle" Value="{StaticResource calendarButtonStyle}" />
+            <Setter Property="app:CalendarEx.HeaderTemplate" Value="{StaticResource calendarHeaderButtonTemplate}" />
+        </Style>
+
+        <Style TargetType="{x:Type DatePicker}" x:Key="japanDatePicker">
+            <Setter Property="CalendarStyle" Value="{StaticResource japaneseCalendar}" />
+        </Style>
+
     </Window.Resources>
 
     <Grid>
         <Grid.LayoutTransform>
-            <ScaleTransform ScaleX="2" ScaleY="2" />
+            <ScaleTransform ScaleX="1.5" ScaleY="1.5" />
         </Grid.LayoutTransform>
-        <UniformGrid Columns="2" >
+        <UniformGrid Columns="3" >
             <StackPanel>
                 <TextBlock Text="ノーマル" />
-                <Calendar FontSize="20"/>
+                <Calendar/>
             </StackPanel>
-            <StackPanel>
-                <TextBlock Text="改" />
-                <app:CalendarEx FontSize="20" />
-            </StackPanel>
-        </UniformGrid>
-        
 
+            <StackPanel>
+                <TextBlock Text="改(添付プロパティのみ)" />
+                <Calendar app:CalendarEx.HeaderTemplate="{StaticResource calendarHeaderButtonTemplate}" 
+                          CalendarButtonStyle="{StaticResource calendarButtonStyle}"/>
+            </StackPanel>
+            
+            <StackPanel>
+                <TextBlock Text="改(継承)" />
+                <app:CalendarEx/>
+            </StackPanel>
+            
+            <DatePicker VerticalAlignment="Top" />
+
+            <DatePicker VerticalAlignment="Top" Style="{StaticResource japanDatePicker}" />
+        </UniformGrid>
     </Grid>
 </Window>

@@ -20,34 +20,63 @@ namespace WpfApplication1
         }
     }
 
-
     class CalendarEx : System.Windows.Controls.Calendar
     {
         public CalendarEx()
         {
             this.Loaded += CalendarEx_Loaded;
-
-            
         }
+
 
         void CalendarEx_Loaded(object sender, RoutedEventArgs e)
         {
-            var item = (System.Windows.Controls.Primitives.CalendarItem)this.Template.FindName("PART_CalendarItem", this);
-            var header = (Button)item.Template.FindName("PART_HeaderButton", item);
+            SetToHeaderTemplate(this);
+        }
+        private static void SetToHeaderTemplate(System.Windows.Controls.Calendar target)
+        {
+            if (target.Template != null)
+            {
+                var item = (System.Windows.Controls.Primitives.CalendarItem)target.Template.FindName("PART_CalendarItem", target);
+                if (item == null)
+                {
+                    return;
+                }
 
-            Binding bnd = new Binding("HeaderTemplate");
-            bnd.Source = this;
-            header.SetBinding(ContentControl.ContentTemplateProperty, bnd);
+                var header = (Button)item.Template.FindName("PART_HeaderButton", item);
+                Binding bnd = new Binding("HeaderTemplate");
+                bnd.Source = target;
+                header.SetBinding(ContentControl.ContentTemplateProperty, bnd);
+            }
+            else
+            {
+                target.Loaded += (s, e) =>
+                    {
+                        SetToHeaderTemplate(target);
+                    };
+            }
         }
 
-        public DataTemplate HeaderTemplate
+        public static DataTemplate GetHeaderTemplate(DependencyObject obj)
         {
-            get { return (DataTemplate)GetValue(HeaderTemplateProperty); }
-            set { SetValue(HeaderTemplateProperty, value); }
+            return (DataTemplate)obj.GetValue(HeaderTemplateProperty);
+        }
+
+        public static void SetHeaderTemplate(DependencyObject obj, DataTemplate value)
+        {
+            obj.SetValue(HeaderTemplateProperty, value);
         }
 
         public static readonly DependencyProperty HeaderTemplateProperty =
-            DependencyProperty.Register("HeaderTemplate", typeof(DataTemplate), typeof(CalendarEx), new PropertyMetadata(null));
+            DependencyProperty.RegisterAttached
+            ("HeaderTemplate"
+            , typeof(DataTemplate)
+            , typeof(System.Windows.Controls.Calendar)
+            , new PropertyMetadata(null, HeaderTemplatePropertyChangedCallback));
+
+        private static void HeaderTemplatePropertyChangedCallback(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            SetToHeaderTemplate((System.Windows.Controls.Calendar)d);
+        }
     }
 
     /// <summary>カレンダーに年が西暦の文字列で入ってくるので、それを和暦文字に変換するコンバーター</summary>
@@ -73,7 +102,7 @@ namespace WpfApplication1
                 return s;
             }
 
-         
+
             var ss = s.Split('-');
             DateTime t1;
             DateTime t2;
@@ -171,6 +200,4 @@ namespace WpfApplication1
             return null;
         }
     }
-
-
 }
